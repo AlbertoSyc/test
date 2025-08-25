@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrenador Personal</title>
+  <link rel="icon" type="image/x-icon" href="https://images.icon-icons.com/2177/PNG/512/exercise_stretching_sport_icon_133371.png">
+  <!-- Cargar Tailwind desde CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 min-h-screen flex flex-col items-center justify-center p-6">
+
+  <div id="intro" class="text-center space-y-6">
+    <h1 class="text-4xl font-bold text-gray-800">🏋️‍♀️ Entrenador Personal Virtual</h1>
+    <p class="text-lg text-gray-700">Selecciona una rutina de estiramientos para comenzar:</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+      <button onclick="mostrarRutina('manana')" class="bg-white shadow-xl rounded-2xl p-6 text-2xl hover:bg-blue-100 transition">🌞<br>Buenos Días</button>
+      <button onclick="mostrarRutina('oficina')" class="bg-white shadow-xl rounded-2xl p-6 text-2xl hover:bg-green-100 transition">💼<br>Oficina</button>
+      <button onclick="mostrarRutina('noche')" class="bg-white shadow-xl rounded-2xl p-6 text-2xl hover:bg-purple-100 transition">🌙<br>Fin del Día</button>
+    </div>
+
+  </div>
+  <div id="rutina" class="hidden w-full max-w-4xl">
+    <button onclick="volverInicio()" class="mb-4 px-4 py-2 bg-pink-300 hover:bg-pink-400 rounded-xl shadow">⬅ Volver</button>
+    <h2 id="tituloRutina" class="text-3xl font-bold text-gray-800 mb-2"></h2>
+    <p id="duracionRutina" class="text-lg text-gray-700 mb-4"></p>
+
+    <div class="flex items-center justify-center gap-4 mb-6">
+      <span id="timer" class="text-2xl font-bold text-gray-800">00:00</span>
+      <button onclick="iniciarTimer()" class="bg-green-300 hover:bg-green-400 px-4 py-2 rounded-xl shadow">Iniciar</button>
+      <button onclick="pausarTimer()" class="bg-yellow-300 hover:bg-yellow-400 px-4 py-2 rounded-xl shadow">Pausa</button>
+      <button onclick="finalizarTimer()" class="bg-red-300 hover:bg-red-400 px-4 py-2 rounded-xl shadow">Fin</button>
+    </div>
+
+    <div id="ejercicios" class="grid gap-6 sm:grid-cols-2"></div>
+  </div>
+
+  <div id="rutina" class="hidden w-full max-w-4xl">
+    <button onclick="volverInicio()" class="mb-4 px-4 py-2 bg-pink-300 hover:bg-pink-400 rounded-xl shadow">⬅ Volver</button>
+    <h2 id="tituloRutina" class="text-3xl font-bold text-gray-800 mb-4"></h2>
+    <p id="duracionRutina" class="text-lg text-gray-700 mb-6"></p>
+    <div id="ejercicios" class="grid gap-6 sm:grid-cols-2"></div>
+  </div>
+
+  <script>
+
+    let timerInterval;
+    let tiempoRestante = 0;
+    
+    const rutinas = {
+      manana: {
+        titulo: "🌞 Rutina de Buenos Días",
+        duracion: 15*60, 
+        ejercicios: [
+          { nombre: "Estiramiento de cuello", rep: "10 repeticiones", desc: "Inclina la cabeza hacia un lado, mantén unos segundos, luego cambia al otro lado. Repite adelante y atrás para relajar el cuello.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-2.jpg" },
+          { nombre: "Estiramiento de hombros", rep: "12 repeticiones", desc: "Cruza un brazo sobre el pecho y presiónalo con el otro hacia tu cuerpo. Cambia de brazo después de unos segundos.", img: "https://spotebi.com/wp-content/uploads/2014/10/shoulder-stretch-exercise-illustration.jpg" },
+          { nombre: "Giro de tronco", rep: "10 repeticiones", desc: "De pie, coloca las manos en la cintura y gira lentamente el torso hacia la izquierda y luego a la derecha.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-4.jpg" },
+          { nombre: "Estiramiento de espalda baja", rep: "10 repeticiones", desc: "Inclínate hacia adelante con las piernas rectas e intenta tocar el suelo con las manos sin forzar.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-5.jpg" },
+          { nombre: "Estiramiento de pantorrillas", rep: "12 repeticiones", desc: "Coloca un pie adelante y otro atrás, empuja la pared con las manos mientras mantienes el talón de atrás en el suelo.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-6.jpg" },
+          { nombre: "Estiramiento lateral de brazos", rep: "10 repeticiones", desc: "Levanta un brazo sobre la cabeza e inclínate hacia el lado contrario, manteniendo la espalda recta.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-7.jpg" },
+          { nombre: "Tocar puntas de pies", rep: "12 repeticiones", desc: "De pie, baja lentamente para intentar tocar tus pies con las manos, mantén unos segundos y sube despacio.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-8.jpg" },
+          { nombre: "Rodillas al pecho", rep: "8 repeticiones", desc: "Acostado boca arriba, lleva ambas rodillas hacia el pecho y abrázalas suavemente.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-9.jpg" },
+          { nombre: "Estiramiento de cuádriceps", rep: "10 repeticiones", desc: "De pie, sujeta un pie detrás de ti llevando el talón hacia el glúteo. Mantén el equilibrio y cambia de pierna.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-10.jpg" },
+          { nombre: "Respiración profunda", rep: "5 repeticiones", desc: "Coloca una mano en el abdomen, respira profundamente por la nariz y exhala lentamente por la boca.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-11.jpg" },
+          { nombre: "Shaolin Qigong 15 Minute Daily Routine", rep: "1 repetición", desc: " In this video includes Warm ups, 8 Movements Shaolin Qigong BaduanJin and Massage Movements." , img: "https://www.youtube.com/watch?v=y2RAEnWreoE" }
+        ]
+      },
+      oficina: {
+        titulo: "💼 Rutina en la Oficina",
+        duracion: 5*60, 
+        ejercicios: [
+          { nombre: "Estiramiento de muñeca", rep: "10 repeticiones", desc: "Extiende un brazo, con la otra mano tira suavemente de la palma hacia abajo y luego hacia arriba.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-12.jpg" },
+          { nombre: "Giro de cuello", rep: "8 repeticiones", desc: "Haz círculos lentos con la cabeza hacia un lado y luego hacia el otro, sin forzar.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-13.jpg" },
+          { nombre: "Rotación de hombros", rep: "12 repeticiones", desc: "Encoge los hombros hacia las orejas y haz círculos hacia atrás y hacia adelante.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-14.jpg" },
+          { nombre: "Estiramiento de espalda sentado", rep: "10 repeticiones", desc: "Siéntate derecho, baja el torso hacia los muslos y deja caer los brazos hacia el suelo.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-15.jpg" },
+          { nombre: "Giro de torso sentado", rep: "10 repeticiones", desc: "Con la espalda recta, gira el torso hacia un lado apoyando la mano en el respaldo de la silla, luego cambia.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-16.jpg" },
+          { nombre: "Estiramiento de tríceps", rep: "8 repeticiones", desc: "Lleva un brazo por detrás de la cabeza, con la otra mano empuja suavemente el codo hacia abajo.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-17.jpg" },
+          { nombre: "Estiramiento de tobillos", rep: "12 repeticiones", desc: "Levanta un pie y haz círculos con el tobillo hacia un lado y luego hacia el otro.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-18.jpg" },
+          { nombre: "Estiramiento de pecho", rep: "10 repeticiones", desc: "Coloca las manos detrás de la espalda y estira los brazos, abriendo el pecho hacia adelante.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-19.jpg" },
+          { nombre: "Estiramiento lateral sentado", rep: "8 repeticiones", desc: "Levanta un brazo sobre la cabeza e inclínate hacia el lado contrario, manteniendo la cadera apoyada en la silla.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-20.jpg" },
+          { nombre: "Respiración profunda", rep: "5 repeticiones", desc: "Siéntate derecho, respira profundamente por la nariz y exhala lentamente por la boca.", img: "https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-21.jpg" }
+        ]
+      },
+      noche: {
+        titulo: "🌙 Rutina Fin del Día",
+        duracion: 15*60,
+        ejercicios: Array.from({length:20}).map((_,i)=>({
+          nombre: `Ejercicio relajante ${i+1}`,
+          rep: "10 repeticiones",
+          desc: "Realiza un estiramiento suave y mantenlo de 10 a 20 segundos para liberar la tensión acumulada durante el día.",
+          img: `https://www.shelterpub.com/wp-content/uploads/2015/10/Stretching-40th-Anniversary-Edition-Page-${22 + i}.jpg`
+        }))
+      }
+    };
+
+    function mostrarRutina(tipo) {
+      document.getElementById('intro').classList.add('hidden');
+      document.getElementById('rutina').classList.remove('hidden');
+      
+      const rutina = rutinas[tipo];
+      document.getElementById('tituloRutina').innerText = rutina.titulo;
+      document.getElementById('duracionRutina').innerText = `Duración aproximada: ${Math.floor(rutina.duracion/60)} minutos`;
+      tiempoRestante = rutina.duracion;
+      actualizarTimer();
+
+      const cont = document.getElementById('ejercicios');
+      cont.innerHTML = '';
+      rutina.ejercicios.forEach(e => {
+        cont.innerHTML += `
+          <div class="bg-white rounded-2xl shadow p-4 flex flex-col items-center">
+            <img src="${e.img}" alt="${e.nombre}" class="w-32 h-32 object-contain mb-2"/>
+            <h3 class="text-xl font-semibold mb-1">${e.nombre}</h3>
+            <p class="text-gray-600 text-sm mb-1">${e.desc}</p>
+            <p class="text-gray-800 font-medium">${e.rep}</p>
+          </div>`;
+      });
+    }
+
+
+    function actualizarTimer() {
+      const min = String(Math.floor(tiempoRestante / 60)).padStart(2,'0');
+      const sec = String(tiempoRestante % 60).padStart(2,'0');
+      document.getElementById('timer').innerText = `${min}:${sec}`;
+    }
+
+    function iniciarTimer() {
+      if(timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(()=>{
+        if(tiempoRestante>0){
+          tiempoRestante--;
+          actualizarTimer();
+        } else {
+          clearInterval(timerInterval);
+          alert("⏰ Tiempo completado!");
+        }
+      },1000);
+    }
+
+    function pausarTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function finalizarTimer() {
+      clearInterval(timerInterval);
+      tiempoRestante = 0;
+      actualizarTimer();
+    }
+
+    function volverInicio() {
+      document.getElementById('intro').classList.remove('hidden');
+      document.getElementById('rutina').classList.add('hidden');
+      finalizarTimer();
+    }
+  </script>
+</body>
+</html>
+
+ 
